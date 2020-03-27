@@ -10,6 +10,8 @@
 
 #include <omp.h>
 #include "nr3.h"
+#include <algorithm>
+#include <random>
 #include "utils.h"
 
 int main()
@@ -146,6 +148,15 @@ int main()
 		}
 	}
 
+	// allocate a index array that will be repeatedley shuffled
+	// in order to Monte-Carlo sample the IMF
+	int *index_arr;
+	index_arr = (int *) malloc(sizeof(int)*4);
+	for (i=0;i<4;i++){
+		index_arr[i] = i;
+	}
+	unsigned seed = 42;
+	shuffle (index_arr.begin(), index_arr.end(), default_random_engine(seed));
 
 	// de-allocate memory
 	free(kmass);
@@ -155,6 +166,7 @@ int main()
 	free(J); free(J_out);
 	free(H); free(H_out);
 	free(F); free(F_out);
+	free(index_arr);
 
 	/* code */
 	return 0;
