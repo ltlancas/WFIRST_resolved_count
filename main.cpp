@@ -31,6 +31,12 @@ int main()
 	// number of bands
 	Int N_band = 5;
 
+	// These are used for allocating memory, could cause segfaults maybe
+	// maximum number of initial masses being read in from IMF
+	Int maxN_IMF = 6000000;
+	// maximum number of lines to be read from isochrone file
+	Int maxN_iso = 1600;
+
 	// All below for Z, Y, J, H & F
 	// Conversion from AB to Vega magnitudes 
 	Doub AB_Vega[N_band] = {0.487, 0.653, 0.958, 1.287, 1.552}; // This is m_AB - m_Vega
@@ -62,8 +68,6 @@ int main()
 	/* Read in initializing files such as the IMF 
 	 * and the isochrones 
 	 */
-	// maximum number of initial masses being read in
-	Int maxN_IMF = 6000000;
 	Doub temp;
 	Doub *kmass;
 	kmass = (Doub*) malloc(sizeof(Doub)*maxN_IMF);
@@ -81,11 +85,55 @@ int main()
 	}
 	massfile.close();
 
-	// 
+	/* Reading in the isochrone so that the IMF can be 
+	 * interpolated and turned in to colors/magnitudes
+	 */
+	Doub *imass, *Z, *Y, *J, *H, *F;
+	imass = (Doub*) malloc(sizeof(Doub)*maxN_iso);
+	Z = (Doub*) malloc(sizeof(Doub)*maxN_iso);
+	Y = (Doub*) malloc(sizeof(Doub)*maxN_iso);
+	J = (Doub*) malloc(sizeof(Doub)*maxN_iso);
+	H = (Doub*) malloc(sizeof(Doub)*maxN_iso);
+	F = (Doub*) malloc(sizeof(Doub)*maxN_iso);
+
+	// Reading isochrone file
+	ifstream isofile ("samp_iso.txt");
+	if(!isofile.is_open()){
+		cerr << "There was a problem opening the isochrone file \n";
+		return 1;
+	}
+	Int i = 0;
+	Doub min_imass=10., max_imass=0.;
+	while (isofile>>temp) {
+		imass[i] = temp;
+		if (imass[i]>max_imass)
+			max_imass = imass[i];
+		if (imass[i]<min_imass)
+			min_imass = imass[i];
+		isofile>>temp;
+		Z[i] = temp;
+		isofile>>temp;
+		Y[i] = temp;
+		isofile>>temp;
+		J[i] = temp;
+		isofile>>temp;
+		H[i] = temp;
+		isofile>>temp;
+		F[i] = temp;
+		i += 1;
+	}
+	isofile.close();
+
 
 
 	// de-allocate memory
 	free(kmass);
+	free(imass);
+	free(Z);
+	free(Y);
+	free(J);
+	free(H);
+	free(F);
 
 	/* code */
 	return 0;
