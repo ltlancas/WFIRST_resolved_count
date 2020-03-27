@@ -33,13 +33,13 @@ int main()
 
 	// All below for Z, Y, J, H & F
 	// Conversion from AB to Vega magnitudes 
-	Doub AB_Vega[N_band] = {0.487, 0.653, 0.958, 1.287, 1.552}; // This is m_AB - m_Vega
+	Doub AB_Vega[] = {0.487, 0.653, 0.958, 1.287, 1.552}; // This is m_AB - m_Vega
 	// AB zeropoints from arXiv:1702.01747
-	Doub ab_zeros[N_band] = {26.39, 26.41, 26.35, 26.41, 25.96};
+	Doub ab_zeros[] = {26.39, 26.41, 26.35, 26.41, 25.96};
 	// central wavelength in microns
-	Doub lam_c[N_band] = {0.87,1.09,1.30,1.60,1.88};
+	Doub lam_c[] = {0.87,1.09,1.30,1.60,1.88};
 	// central frequency in Hz
-	Doub nu_c[N_band];
+	Doub nu_c[] = {0.,0.,0.,0.,0.};
 	Int j;
 	for(j=0;j<N_band;j++){
 		nu_c[j] = C/lam_c[j];
@@ -50,13 +50,13 @@ int main()
 	* R = 0.5-0.8 microns,   Z = 0.75-1.0 microns,   Y = 0.9-1.2 microns
 	* J = 1.1-1.5 microns,   W = 0.95-2.0 microns,   H = 1.35-1.8 microns, F = 1.65-2.0 microns 
 	* Z, Y, J, H, F */
-	Doub ps_detect_5slim[N_band] = {26.061,25.989,25.939,25.819,25.517};
+	Doub ps_detect_5slim[] = {26.061,25.989,25.939,25.819,25.517};
 	for(j=0;j<N_band;j++){
 		ps_detect_5slim[j] += 2.5 *log10(sqrt(t_expose/1000.));
 	}
 
 	// AB zero-point flux definitin in ergs s^-1 Hz^-1
-	f_ab_zero = 6.626e-27;
+	Doub f_ab_zero = 6.626e-27;
 
 
 	/* Read in initializing files such as the IMF 
