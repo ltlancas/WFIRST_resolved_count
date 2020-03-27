@@ -10,6 +10,7 @@
 
 #include <omp.h>
 #include "nr3.h"
+#include "utils.h"
 
 int main()
 {
