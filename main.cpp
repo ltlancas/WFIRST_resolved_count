@@ -102,7 +102,7 @@ int main()
 		cerr << "There was a problem opening the isochrone file \n";
 		return 1;
 	}
-	Int i = 0;
+	i = 0;
 	Doub min_imass=10., max_imass=0.;
 	while (isofile>>temp) {
 		imass[i] = temp;
