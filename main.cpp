@@ -10,6 +10,7 @@
 
 #include <omp.h>
 #include "nr3.h"
+#include "ran.h"
 #include "utils.h"
 
 int main()
@@ -19,34 +20,34 @@ int main()
 	 */
 
 	// surface birghtness in mags/arcsec^2
-	Doub S = 33.; 
+	double S = 33.; 
 	// exposure time in seconds
-	Doub t_expose = 1000.;
+	double t_expose = 1000.;
 	// distance in Mpc
-	Doub d = 1.;
+	double d = 1.;
 	// distance modulus 
-	Doub mu = 5.*log10(d*1e5);
+	double mu = 5.*log10(d*1e5);
 	// speed of light in microns per second
-	Doub C = 2.998e14;
+	double C = 2.998e14;
 	// number of bands
-	Int N_band = 5;
+	int N_band = 5;
 
 	// These are used for allocating memory, could cause segfaults maybe
 	// maximum number of initial masses being read in from IMF
-	Int maxN_IMF = 6000000;
+	int maxN_IMF = 6000000;
 	// maximum number of lines to be read from isochrone file
-	Int maxN_iso = 1600;
+	int maxN_iso = 1600;
 
 	// All below for Z, Y, J, H & F
 	// Conversion from AB to Vega magnitudes 
-	Doub AB_Vega[] = {0.487, 0.653, 0.958, 1.287, 1.552}; // This is m_AB - m_Vega
+	double AB_Vega[] = {0.487, 0.653, 0.958, 1.287, 1.552}; // This is m_AB - m_Vega
 	// AB zeropoints from arXiv:1702.01747
-	Doub ab_zeros[] = {26.39, 26.41, 26.35, 26.41, 25.96};
+	double ab_zeros[] = {26.39, 26.41, 26.35, 26.41, 25.96};
 	// central wavelength in microns
-	Doub lam_c[] = {0.87,1.09,1.30,1.60,1.88};
+	double lam_c[] = {0.87,1.09,1.30,1.60,1.88};
 	// central frequency in Hz
-	Doub nu_c[] = {0.,0.,0.,0.,0.};
-	Int j;
+	double nu_c[] = {0.,0.,0.,0.,0.};
+	int j;
 	for(j=0;j<N_band;j++){
 		nu_c[j] = C/lam_c[j];
 	}
@@ -56,21 +57,22 @@ int main()
 	* R = 0.5-0.8 microns,   Z = 0.75-1.0 microns,   Y = 0.9-1.2 microns
 	* J = 1.1-1.5 microns,   W = 0.95-2.0 microns,   H = 1.35-1.8 microns, F = 1.65-2.0 microns 
 	* Z, Y, J, H, F */
-	Doub ps_detect_5slim[] = {26.061,25.989,25.939,25.819,25.517};
+	double ps_detect_5slim[] = {26.061,25.989,25.939,25.819,25.517};
 	for(j=0;j<N_band;j++){
 		ps_detect_5slim[j] += 2.5 *log10(sqrt(t_expose/1000.));
 	}
 
 	// AB zero-point flux definitin in ergs s^-1 Hz^-1
-	Doub f_ab_zero = 6.626e-27;
+	double f_ab_zero = 6.626e-27;
 
 
 	/* Read in initializing files such as the IMF 
 	 * and the isochrones 
 	 */
-	Doub temp;
-	Doub *kmass;
-	kmass = (Doub*) malloc(sizeof(Doub)*maxN_IMF);
+	int N_IMF;
+	double temp;
+	double *kmass;
+	kmass = (double*) malloc(sizeof(double)*maxN_IMF);
 
 	// reading in IMF file
 	ifstream massfile ("mid_set.txt");
@@ -78,23 +80,31 @@ int main()
 		cerr << "There was a problem opening the IMF file \n";
 		return 1;
 	}
-	Int i = 0;
+	int i = 0;
 	while (massfile>>temp) {
 		kmass[i] = temp;
 		i += 1;
 	}
+	N_IMF = i;
 	massfile.close();
 
 	/* Reading in the isochrone so that the IMF can be 
 	 * interpolated and turned in to colors/magnitudes
 	 */
-	Doub *imass, *Z, *Y, *J, *H, *F;
-	imass = (Doub*) malloc(sizeof(Doub)*maxN_iso);
-	Z = (Doub*) malloc(sizeof(Doub)*maxN_iso);
-	Y = (Doub*) malloc(sizeof(Doub)*maxN_iso);
-	J = (Doub*) malloc(sizeof(Doub)*maxN_iso);
-	H = (Doub*) malloc(sizeof(Doub)*maxN_iso);
-	F = (Doub*) malloc(sizeof(Doub)*maxN_iso);
+	int N_iso;
+	double *imass, *Z, *Y, *J, *H, *F;
+	double *Z_out, *Y_out, *J_out, *H_out, *F_out;
+	imass = (double*) malloc(sizeof(double)*maxN_iso);
+	Z = (double*) malloc(sizeof(double)*maxN_iso);
+	Y = (double*) malloc(sizeof(double)*maxN_iso);
+	J = (double*) malloc(sizeof(double)*maxN_iso);
+	H = (double*) malloc(sizeof(double)*maxN_iso);
+	F = (double*) malloc(sizeof(double)*maxN_iso);
+	Z_out = (double*) malloc(sizeof(double)*N_IMF);
+	Y_out = (double*) malloc(sizeof(double)*N_IMF);
+	J_out = (double*) malloc(sizeof(double)*N_IMF);
+	H_out = (double*) malloc(sizeof(double)*N_IMF);
+	F_out = (double*) malloc(sizeof(double)*N_IMF);
 
 	// Reading isochrone file
 	ifstream isofile ("samp_iso.txt");
@@ -103,7 +113,7 @@ int main()
 		return 1;
 	}
 	i = 0;
-	Doub min_imass=10., max_imass=0.;
+	double min_imass=10., max_imass=0.;
 	while (isofile>>temp) {
 		imass[i] = temp;
 		if (imass[i]>max_imass)
@@ -122,18 +132,30 @@ int main()
 		F[i] = temp;
 		i += 1;
 	}
+	N_iso = i;
 	isofile.close();
 
+	int N_imf_filt=0;
+	for(j=0;j<N_IMF;j++){
+		if ((kmass[j] < max_imass) && (kmass[j]>min_imass)){
+			Z_out[N_imf_filt] = linear_interp(kmass[j],imass,Z);
+			Y_out[N_imf_filt] = linear_interp(kmass[j],imass,Y);
+			J_out[N_imf_filt] = linear_interp(kmass[j],imass,J);
+			H_out[N_imf_filt] = linear_interp(kmass[j],imass,H);
+			F_out[N_imf_filt] = linear_interp(kmass[j],imass,F);
+			N_imf_filt++;
+		}
+	}
 
 
 	// de-allocate memory
 	free(kmass);
 	free(imass);
-	free(Z);
-	free(Y);
-	free(J);
-	free(H);
-	free(F);
+	free(Z); free(Z_out);
+	free(Y); free(Y_out);
+	free(J); free(J_out);
+	free(H); free(H_out);
+	free(F); free(F_out);
 
 	/* code */
 	return 0;
