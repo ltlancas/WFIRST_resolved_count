@@ -153,11 +153,11 @@ int main()
 	int N_imf_filt=0;
 	for(j=0;j<N_IMF;j++){
 		if ((kmass[j] < max_imass) && (kmass[j]>min_imass)){
-			Z_out[N_imf_filt] = linear_interp(kmass[j],imass,Z) + AB_Vega[0];
-			Y_out[N_imf_filt] = linear_interp(kmass[j],imass,Y) + AB_Vega[1];
-			J_out[N_imf_filt] = linear_interp(kmass[j],imass,J) + AB_Vega[2];
-			H_out[N_imf_filt] = linear_interp(kmass[j],imass,H) + AB_Vega[3];
-			F_out[N_imf_filt] = linear_interp(kmass[j],imass,F) + AB_Vega[4];
+			Z_out[N_imf_filt] = linear_interp(kmass[j],imass,Z) + AB_Vega[0] + mu;
+			Y_out[N_imf_filt] = linear_interp(kmass[j],imass,Y) + AB_Vega[1] + mu;
+			J_out[N_imf_filt] = linear_interp(kmass[j],imass,J) + AB_Vega[2] + mu;
+			H_out[N_imf_filt] = linear_interp(kmass[j],imass,H) + AB_Vega[3] + mu;
+			F_out[N_imf_filt] = linear_interp(kmass[j],imass,F) + AB_Vega[4] + mu;
 			N_imf_filt++;
 		}
 	}
@@ -171,13 +171,13 @@ int main()
 	unsigned seed = 42;
 	shuffle (index_arr.begin(), index_arr.end(), default_random_engine(seed));
 
-	cout << "Shuffled elements: ";
-	for(int &x: index_arr) cout << ' ' << x;
-	cout << "\n";
+	//cout << "Shuffled elements: ";
+	//for(int &x: index_arr) cout << ' ' << x;
+	//cout << "\n";
 
 
 	
-	// set up flux limits
+	// set uppper flux limits
 	double S_J = S + AB_Vega[2] - ab_zeros[2];
 	double f_S_J = f_ab_zero*nu_c[2] * pow(10,((S_J)/(-2.5)));
 	double f_S_J_tot = f_S_J*FoV_as;
@@ -187,6 +187,8 @@ int main()
 	double S_F = S + AB_Vega[4] - ab_zeros[4];
 	double f_S_F = f_ab_zero*nu_c[4] * pow(10,((S_F)/(-2.5)));
 	double f_S_F_tot = f_S_F*FoV_as;
+
+	cout << "Flux limit in J band is " << f_S_J_tot << "ergs/s" << "\n";
 
 	double *f_Z, *f_Y, *f_J, *f_H, *f_F;
 	f_Z = (double *) malloc(sizeof(double)*N_imf_filt);
@@ -204,6 +206,8 @@ int main()
 		f_H[i] = f_ab_zero*nu_c[3] * pow(10, (H_out[i] - ab_zeros[3])/(-2.5));
 		f_F[i] = f_ab_zero*nu_c[4] * pow(10, (F_out[i] - ab_zeros[4])/(-2.5));
 	}
+
+
 	// cumulative sum of flux array
 	double CS_fJ = 0;
 	int n_needed = 0;
@@ -217,13 +221,14 @@ int main()
 	}
 
 	// count the number that are above the detection threshold
-	n_detected = 0;
+	int n_detected = 0;
 	for(i=0;i<n_needed;i++){
 		if(J_out[i]<ps_detect_5slim[2]){
 			n_detected++;
 		}
 	}
-	cout << n_detected << " stars are detected per square degree";
+	cout << n_needed << " stars are in the field of view" << "\n";
+	cout << n_detected << " stars are detected per square degree" << "\n";
 
 
 	// de-allocate memory

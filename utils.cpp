@@ -7,8 +7,8 @@ double linear_interp(const double xi, const double* xs, const double* ys) {
 	int i=0;
 
 	// get to the right spot in the array
-	while(xi<xs[i]) i++;
-	i--;
+	while(xi>xs[i]) i++;
+	i = i - 1;
 
 	// linear interpolation 
 	xa = xs[i];
