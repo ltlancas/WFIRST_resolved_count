@@ -38,6 +38,12 @@ int main()
 	// number of bands
 	int N_band = 5;
 
+	// defintion of field of view
+	double sqdeg_sqas = 3600.*3600.;
+	double dra=1.,ddec = 1.;
+	double FoV_as = dra*ddec*sqdeg_sqas;
+
+
 	// These are used for allocating memory, could cause segfaults maybe
 	// maximum number of initial masses being read in from IMF
 	int maxN_IMF = 6000000;
@@ -64,8 +70,9 @@ int main()
 	* J = 1.1-1.5 microns,   W = 0.95-2.0 microns,   H = 1.35-1.8 microns, F = 1.65-2.0 microns 
 	* Z, Y, J, H, F */
 	double ps_detect_5slim[] = {26.061,25.989,25.939,25.819,25.517};
+	double expose_fac = 2.5*log10(sqrt(t_expose/1000.));
 	for(j=0;j<N_band;j++){
-		ps_detect_5slim[j] += 2.5 *log10(sqrt(t_expose/1000.));
+		ps_detect_5slim[j] += expose_fac;
 	}
 
 	// AB zero-point flux definitin in ergs s^-1 Hz^-1
@@ -141,14 +148,16 @@ int main()
 	N_iso = i;
 	isofile.close();
 
+	// interpolate on to the IMF and convert from
+	// Vega magnitudes to AB magnitudes
 	int N_imf_filt=0;
 	for(j=0;j<N_IMF;j++){
 		if ((kmass[j] < max_imass) && (kmass[j]>min_imass)){
-			Z_out[N_imf_filt] = linear_interp(kmass[j],imass,Z);
-			Y_out[N_imf_filt] = linear_interp(kmass[j],imass,Y);
-			J_out[N_imf_filt] = linear_interp(kmass[j],imass,J);
-			H_out[N_imf_filt] = linear_interp(kmass[j],imass,H);
-			F_out[N_imf_filt] = linear_interp(kmass[j],imass,F);
+			Z_out[N_imf_filt] = linear_interp(kmass[j],imass,Z) + AB_Vega[0];
+			Y_out[N_imf_filt] = linear_interp(kmass[j],imass,Y) + AB_Vega[1];
+			J_out[N_imf_filt] = linear_interp(kmass[j],imass,J) + AB_Vega[2];
+			H_out[N_imf_filt] = linear_interp(kmass[j],imass,H) + AB_Vega[3];
+			F_out[N_imf_filt] = linear_interp(kmass[j],imass,F) + AB_Vega[4];
 			N_imf_filt++;
 		}
 	}
@@ -166,14 +175,57 @@ int main()
 	for(int &x: index_arr) cout << ' ' << x;
 	cout << "\n";
 
+
+	
+	// set up flux limits
+	double S_J = S + AB_Vega[2] - ab_zeros[2];
+	double f_S_J = f_ab_zero*nu_c[2] * pow(10,((S_J)/(-2.5)));
+	double f_S_J_tot = f_S_J*FoV_as;
+	double S_H = S + AB_Vega[3] - ab_zeros[3];
+	double f_S_H = f_ab_zero*nu_c[3] * pow(10,((S_H)/(-2.5)));
+	double f_S_H_tot = f_S_H*FoV_as;
+	double S_F = S + AB_Vega[4] - ab_zeros[4];
+	double f_S_F = f_ab_zero*nu_c[4] * pow(10,((S_F)/(-2.5)));
+	double f_S_F_tot = f_S_F*FoV_as;
+
+	double *f_Z, *f_Y, *f_J, *f_H, *f_F;
+	f_Z = (double *) malloc(sizeof(double)*N_imf_filt);
+	f_Y = (double *) malloc(sizeof(double)*N_imf_filt);
+	f_J = (double *) malloc(sizeof(double)*N_imf_filt);
+	f_H = (double *) malloc(sizeof(double)*N_imf_filt);
+	f_F = (double *) malloc(sizeof(double)*N_imf_filt);
+
+
+	//fluxes in photon counts per second
+	double f_Z = f_ab_zero*nu_c[0] * pow(10, (Z_out - ab_zeros[0])/(-2.5));
+	double f_Y = f_ab_zero*nu_c[1] * pow(10, (Y_out - ab_zeros[1])/(-2.5));
+	double f_J = f_ab_zero*nu_c[2] * pow(10, (J_out - ab_zeros[2])/(-2.5));
+	double f_H = f_ab_zero*nu_c[3] * pow(10, (H_out - ab_zeros[3])/(-2.5));
+	double f_F = f_ab_zero*nu_c[4] * pow(10, (F_out - ab_zeros[4])/(-2.5));
+
+	// cumulative sum of flux array
+	double CS_fJ = 0;
+	int n_needed = 0;
+	while((CS_fJ < f_S_J_tot) && (n_needed < N_imf_filt)){
+		CS_fJ += f_J[n_needed];
+		n_needed++;
+	}
+	// check to make cure that the whole filter wasn't needed
+	if (n_needed==N_imf_filt){
+		cout << "Used the entire IMF. You should decrease the size of the field or increase the IMF sample." << "\n";
+	}
+
+	// count the number that are above the detection threshold.
+	
+
 	// de-allocate memory
 	free(kmass);
 	free(imass);
-	free(Z); free(Z_out);
-	free(Y); free(Y_out);
-	free(J); free(J_out);
-	free(H); free(H_out);
-	free(F); free(F_out);
+	free(Z); free(Z_out); free(f_Z);
+	free(Y); free(Y_out); free(f_Y);
+	free(J); free(J_out); free(f_J);
+	free(H); free(H_out); free(f_H);
+	free(F); free(F_out); free(f_F);
 
 	/* code */
 	return 0;
