@@ -163,7 +163,7 @@ int main()
 	shuffle (index_arr.begin(), index_arr.end(), default_random_engine(seed));
 
 	cout << "Shuffled elements: ";
-	for(int &x index_arr) cout << ' ' << x;
+	for(int &x: index_arr) cout << ' ' << x;
 	cout << "\n";
 
 	// de-allocate memory

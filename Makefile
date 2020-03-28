@@ -1,19 +1,18 @@
 CXX	= g++
 CXXFLAGS= -O3 -std=gnu++11 #-g -O3 -Wall -Wextra
-#INC                = -I/usr/local/lib/
 PROGRAM	= getN
-OBJS	= obj.o #can change this
-LIBS	= -lm #-L/usr/local/lib/
+DEPS	= utils.h
 
+$(PROGRAM): main.o utils.o
+	$(CXX) $(CXXFLAGS) -o $(PROGRAM) main.o utils.o
 
+main.o: main.cpp utils.h
+	$(CXX) $(CXXFLAGS) -c main.cpp
 
-$(PROGRAM): $(OBJS)
-	$(CXX) $(OBJS) -o $(PROGRAM)
-
-obj.o: utils.h
-	$(CXX) utils.h -o obj.o
+utils.o: 
+	$(CXX) -c utils.cpp
 
 clean:
-		/bin/rm -f $(OBJS)
+		/bin/rm -f *.o
 		/bin/rm -f $(PROGRAM)
 		/bin/rm -f core
