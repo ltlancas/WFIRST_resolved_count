@@ -42,6 +42,10 @@ int main()
 	int N_band = 5;
 
 	// defintion of field of view
+	// which is used as the FoV at 1 Mpc and 
+	// is then rescaled so that the IMF that is 
+	// imported doesn't have to be too large 
+	// for far away/faint populations
 	double sqdeg_sqas = 3600.*3600.;
 	double dra=0.5301,ddec = 0.5301;
 	double FoV_as = dra*ddec*sqdeg_sqas;
@@ -198,13 +202,13 @@ int main()
 			// set uppper flux limits
 			double S_J = S + AB_Vega[2] - ab_zeros[2];
 			double f_S_J = f_ab_zero*nu_c[2] * pow(10,((S_J)/(-2.5)));
-			double f_S_J_tot = f_S_J*FoV_as;
+			double f_S_J_tot = f_S_J*(FoV_as/d*d);
 			double S_H = S + AB_Vega[3] - ab_zeros[3];
 			double f_S_H = f_ab_zero*nu_c[3] * pow(10,((S_H)/(-2.5)));
-			double f_S_H_tot = f_S_H*FoV_as;
+			double f_S_H_tot = f_S_H*(FoV_as/d*d);
 			double S_F = S + AB_Vega[4] - ab_zeros[4];
 			double f_S_F = f_ab_zero*nu_c[4] * pow(10,((S_F)/(-2.5)));
-			double f_S_F_tot = f_S_F*FoV_as;
+			double f_S_F_tot = f_S_F*(FoV_as/d*d);
 
 			//cout << "    Flux limit in J band is " << f_S_J_tot << "ergs/s" << "\n";
 
