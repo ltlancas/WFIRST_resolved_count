@@ -197,12 +197,13 @@ int main()
 
 
 	//fluxes in photon counts per second
-	double f_Z = f_ab_zero*nu_c[0] * pow(10, (Z_out - ab_zeros[0])/(-2.5));
-	double f_Y = f_ab_zero*nu_c[1] * pow(10, (Y_out - ab_zeros[1])/(-2.5));
-	double f_J = f_ab_zero*nu_c[2] * pow(10, (J_out - ab_zeros[2])/(-2.5));
-	double f_H = f_ab_zero*nu_c[3] * pow(10, (H_out - ab_zeros[3])/(-2.5));
-	double f_F = f_ab_zero*nu_c[4] * pow(10, (F_out - ab_zeros[4])/(-2.5));
-
+	for (i=0;i<N_imf_filt;i++){
+		f_Z[i] = f_ab_zero*nu_c[0] * pow(10, (Z_out[i] - ab_zeros[0])/(-2.5));
+		f_Y[i] = f_ab_zero*nu_c[1] * pow(10, (Y_out[i] - ab_zeros[1])/(-2.5));
+		f_J[i] = f_ab_zero*nu_c[2] * pow(10, (J_out[i] - ab_zeros[2])/(-2.5));
+		f_H[i] = f_ab_zero*nu_c[3] * pow(10, (H_out[i] - ab_zeros[3])/(-2.5));
+		f_F[i] = f_ab_zero*nu_c[4] * pow(10, (F_out[i] - ab_zeros[4])/(-2.5));
+	}
 	// cumulative sum of flux array
 	double CS_fJ = 0;
 	int n_needed = 0;
@@ -216,7 +217,7 @@ int main()
 	}
 
 	// count the number that are above the detection threshold.
-	
+
 
 	// de-allocate memory
 	free(kmass);
