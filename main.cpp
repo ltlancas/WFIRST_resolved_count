@@ -216,7 +216,14 @@ int main()
 		cout << "Used the entire IMF. You should decrease the size of the field or increase the IMF sample." << "\n";
 	}
 
-	// count the number that are above the detection threshold.
+	// count the number that are above the detection threshold
+	n_detected = 0;
+	for(i=0;i<n_needed;i++){
+		if(J_out[i]<ps_detect_5slim[2]){
+			n_detected++;
+		}
+	}
+	cout << n_detected << " stars are detected per square degree";
 
 
 	// de-allocate memory
