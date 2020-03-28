@@ -25,8 +25,10 @@ int main()
 	 * be read in from stdin in later development 
 	 */
 
-	// surface birghtness in mags/arcsec^2
-	double S = 33.; 
+	// surface brightness in mags/arcsec^2
+	double Smin = 28.,Smax = 33.,S;
+	int n_S = 10;
+	double dS = (Smax - Smin)/(n_S-1);
 	// exposure time in seconds
 	double t_expose = 1000.;
 	// distance in Mpc
@@ -175,21 +177,6 @@ int main()
 	//for(int &x: index_arr) cout << ' ' << x;
 	//cout << "\n";
 
-
-	
-	// set uppper flux limits
-	double S_J = S + AB_Vega[2] - ab_zeros[2];
-	double f_S_J = f_ab_zero*nu_c[2] * pow(10,((S_J)/(-2.5)));
-	double f_S_J_tot = f_S_J*FoV_as;
-	double S_H = S + AB_Vega[3] - ab_zeros[3];
-	double f_S_H = f_ab_zero*nu_c[3] * pow(10,((S_H)/(-2.5)));
-	double f_S_H_tot = f_S_H*FoV_as;
-	double S_F = S + AB_Vega[4] - ab_zeros[4];
-	double f_S_F = f_ab_zero*nu_c[4] * pow(10,((S_F)/(-2.5)));
-	double f_S_F_tot = f_S_F*FoV_as;
-
-	cout << "Flux limit in J band is " << f_S_J_tot << "ergs/s" << "\n";
-
 	double *f_Z, *f_Y, *f_J, *f_H, *f_F;
 	f_Z = (double *) malloc(sizeof(double)*N_imf_filt);
 	f_Y = (double *) malloc(sizeof(double)*N_imf_filt);
@@ -197,39 +184,56 @@ int main()
 	f_H = (double *) malloc(sizeof(double)*N_imf_filt);
 	f_F = (double *) malloc(sizeof(double)*N_imf_filt);
 
+	for (j = 0;j<n_S;j++){
+		// set the current value of surface brightness to look at
+		S = Smin + j*dS;
+		cout << "For a surface brightness of " << S <<  "  mags/ as^2" <<"\n";
+		// set uppper flux limits
+		double S_J = S + AB_Vega[2] - ab_zeros[2];
+		double f_S_J = f_ab_zero*nu_c[2] * pow(10,((S_J)/(-2.5)));
+		double f_S_J_tot = f_S_J*FoV_as;
+		double S_H = S + AB_Vega[3] - ab_zeros[3];
+		double f_S_H = f_ab_zero*nu_c[3] * pow(10,((S_H)/(-2.5)));
+		double f_S_H_tot = f_S_H*FoV_as;
+		double S_F = S + AB_Vega[4] - ab_zeros[4];
+		double f_S_F = f_ab_zero*nu_c[4] * pow(10,((S_F)/(-2.5)));
+		double f_S_F_tot = f_S_F*FoV_as;
 
-	//fluxes in photon counts per second
-	for (i=0;i<N_imf_filt;i++){
-		f_Z[i] = f_ab_zero*nu_c[0] * pow(10, (Z_out[i] - ab_zeros[0])/(-2.5));
-		f_Y[i] = f_ab_zero*nu_c[1] * pow(10, (Y_out[i] - ab_zeros[1])/(-2.5));
-		f_J[i] = f_ab_zero*nu_c[2] * pow(10, (J_out[i] - ab_zeros[2])/(-2.5));
-		f_H[i] = f_ab_zero*nu_c[3] * pow(10, (H_out[i] - ab_zeros[3])/(-2.5));
-		f_F[i] = f_ab_zero*nu_c[4] * pow(10, (F_out[i] - ab_zeros[4])/(-2.5));
-	}
+		cout << "    Flux limit in J band is " << f_S_J_tot << "ergs/s" << "\n";
 
 
-	// cumulative sum of flux array
-	double CS_fJ = 0;
-	int n_needed = 0;
-	while((CS_fJ < f_S_J_tot) && (n_needed < N_imf_filt)){
-		CS_fJ += f_J[n_needed];
-		n_needed++;
-	}
-	// check to make cure that the whole filter wasn't needed
-	if (n_needed==N_imf_filt){
-		cout << "Used the entire IMF. You should decrease the size of the field or increase the IMF sample." << "\n";
-	}
-
-	// count the number that are above the detection threshold
-	int n_detected = 0;
-	for(i=0;i<n_needed;i++){
-		if(J_out[i]<ps_detect_5slim[2]){
-			n_detected++;
+		//fluxes in photon counts per second
+		for (i=0;i<N_imf_filt;i++){
+			f_Z[i] = f_ab_zero*nu_c[0] * pow(10, (Z_out[i] - ab_zeros[0])/(-2.5));
+			f_Y[i] = f_ab_zero*nu_c[1] * pow(10, (Y_out[i] - ab_zeros[1])/(-2.5));
+			f_J[i] = f_ab_zero*nu_c[2] * pow(10, (J_out[i] - ab_zeros[2])/(-2.5));
+			f_H[i] = f_ab_zero*nu_c[3] * pow(10, (H_out[i] - ab_zeros[3])/(-2.5));
+			f_F[i] = f_ab_zero*nu_c[4] * pow(10, (F_out[i] - ab_zeros[4])/(-2.5));
 		}
-	}
-	cout << n_needed << " stars are in the field of view" << "\n";
-	cout << n_detected << " stars are detected per square degree" << "\n";
 
+
+		// cumulative sum of flux array
+		double CS_fJ = 0;
+		int n_needed = 0;
+		while((CS_fJ < f_S_J_tot) && (n_needed < N_imf_filt)){
+			CS_fJ += f_J[n_needed];
+			n_needed++;
+		}
+		// check to make cure that the whole filter wasn't needed
+		if (n_needed==N_imf_filt){
+			cout << "    Used the entire IMF. You should decrease the size of the field or increase the IMF sample." << "\n";
+		}
+
+		// count the number that are above the detection threshold
+		int n_detected = 0;
+		for(i=0;i<n_needed;i++){
+			if(J_out[i]<ps_detect_5slim[2]){
+				n_detected++;
+			}
+		}
+		cout << "   " << n_needed << " stars are in the field of view" << "\n";
+		cout << "   " << n_detected << " stars are detected per square degree" << "\n";
+	}
 
 	// de-allocate memory
 	free(kmass);
