@@ -30,8 +30,8 @@ int main()
 	int n_S = 11;
 	double dS = (Smax - Smin)/(n_S-1);
 	// distance in Mpc
-	double dmin = 1.,dmax = 25.,d,mu;
-	int n_d = 11;
+	double dmin = 1.,dmax = 3.,d,mu;
+	int n_d = 15;
 	double deld = (dmax - dmin)/(n_d-1);
 	// exposure time in seconds
 	double t_expose = 1000.;
@@ -43,13 +43,13 @@ int main()
 
 	// defintion of field of view
 	double sqdeg_sqas = 3600.*3600.;
-	double dra=1.,ddec = 1.;
+	double dra=0.5301,ddec = 0.5301;
 	double FoV_as = dra*ddec*sqdeg_sqas;
 
 
 	// These are used for allocating memory, could cause segfaults maybe
 	// maximum number of initial masses being read in from IMF
-	int maxN_IMF = 6000000;
+	int maxN_IMF = 60000000;
 	// maximum number of lines to be read from isochrone file
 	int maxN_iso = 1600;
 
@@ -190,10 +190,11 @@ int main()
 		d = dmin + k*deld;
 		// distance modulus 
 		mu = 5.*log10(d*1e5);
+		cout << "For distance of " << d << " Mpc" << "\n"; 
 		for (j = 0;j<n_S;j++){
 			// set the current value of surface brightness to look at
 			S = Smin + j*dS;
-			cout << "For a surface brightness of " << S <<  "  mags/ as^2" <<"\n";
+			cout << "  For a surface brightness of " << S <<  "  mags/ as^2" <<"\n";
 			// set uppper flux limits
 			double S_J = S + AB_Vega[2] - ab_zeros[2];
 			double f_S_J = f_ab_zero*nu_c[2] * pow(10,((S_J)/(-2.5)));
@@ -226,18 +227,18 @@ int main()
 			}
 			// check to make cure that the whole filter wasn't needed
 			if (n_needed==N_imf_filt){
-				cout << "    Used the entire IMF. You should decrease the size of the field or increase the IMF sample." << "\n";
+				cout << "Used the entire IMF. You should decrease the size of the field or increase the IMF sample." << "\n";
 			}
 
 			// count the number that are above the detection threshold
 			int n_detected = 0;
 			for(i=0;i<n_needed;i++){
-				if(J_out[i]<ps_detect_5slim[2]){
+				if(J_out[i] + mu<ps_detect_5slim[2]){
 					n_detected++;
 				}
 			}
-			cout << "   " << n_needed << " stars are in the field of view" << "\n";
-			cout << "   " << n_detected << " stars are detected per square degree" << "\n";
+			cout << "     " << n_needed << " stars are in the field of view" << "\n";
+			cout << "     " << n_detected << " stars are detected per square degree" << "\n";
 		} //loop over surface brightness
 	} // loop over distances
 
