@@ -27,19 +27,17 @@ int main()
 
 	// surface brightness in mags/arcsec^2
 	double Smin = 28.,Smax = 33.,S;
-	int n_S = 11;
+	int n_S = 21;
 	double dS = (Smax - Smin)/(n_S-1);
 	// distance in Mpc
-	double dmin = 1.,dmax = 3.,d,mu;
-	int n_d = 15;
+	double dmin = 1.,dmax = 5.,d,mu;
+	int n_d = 21;
 	double deld = (dmax - dmin)/(n_d-1);
 	// exposure time in seconds
 	double t_expose = 1000.;
 
-	// speed of light in microns per second
-	double C = 2.998e14;
-	// number of bands
-	int N_band = 5;
+	ofstream output;
+	output.open("output.txt");
 
 	// defintion of field of view
 	// which is used as the FoV at 1 Mpc and 
@@ -49,6 +47,12 @@ int main()
 	double sqdeg_sqas = 3600.*3600.;
 	double dra=0.5301,ddec = 0.5301;
 	double FoV_as = dra*ddec*sqdeg_sqas;
+
+
+	// speed of light in microns per second
+	double C = 2.998e14;
+	// number of bands
+	int N_band = 5;
 
 
 	// These are used for allocating memory, could cause segfaults maybe
@@ -171,16 +175,12 @@ int main()
 
 	// allocate a index array that will be repeatedley shuffled
 	// in order to Monte-Carlo sample the IMF
-	array<int,10> index_arr = {0,1,2,3,4,5,6,7,8,9};
+	//array<int,10> index_arr = {0,1,2,3,4,5,6,7,8,9};
 	/*for (i=0;i<4;i++){
 		index_arr[i] = i;
 		}*/
-	unsigned seed = 42;
-	shuffle (index_arr.begin(), index_arr.end(), default_random_engine(seed));
-
-	//cout << "Shuffled elements: ";
-	//for(int &x: index_arr) cout << ' ' << x;
-	//cout << "\n";
+	//unsigned seed = 42;
+	//shuffle (index_arr.begin(), index_arr.end(), default_random_engine(seed));
 
 	double *f_Z, *f_Y, *f_J, *f_H, *f_F;
 	f_Z = (double *) malloc(sizeof(double)*N_imf_filt);
@@ -194,21 +194,21 @@ int main()
 		d = dmin + k*deld;
 		// distance modulus 
 		mu = 5.*log10(d*1e5);
-		cout << "For distance of " << d << " Mpc" << "\n"; 
+		//cout << "For distance of " << d << " Mpc" << "\n"; 
 		for (j = 0;j<n_S;j++){
 			// set the current value of surface brightness to look at
 			S = Smin + j*dS;
-			cout << "  For a surface brightness of " << S <<  "  mags/ as^2" <<"\n";
+			//cout << "  For a surface brightness of " << S <<  "  mags/ as^2" <<"\n";
 			// set uppper flux limits
 			double S_J = S + AB_Vega[2] - ab_zeros[2];
 			double f_S_J = f_ab_zero*nu_c[2] * pow(10,((S_J)/(-2.5)));
-			double f_S_J_tot = f_S_J*(FoV_as/d*d);
+			double f_S_J_tot = f_S_J*(FoV_as/(d*d));
 			double S_H = S + AB_Vega[3] - ab_zeros[3];
 			double f_S_H = f_ab_zero*nu_c[3] * pow(10,((S_H)/(-2.5)));
-			double f_S_H_tot = f_S_H*(FoV_as/d*d);
+			double f_S_H_tot = f_S_H*(FoV_as/(d*d));
 			double S_F = S + AB_Vega[4] - ab_zeros[4];
 			double f_S_F = f_ab_zero*nu_c[4] * pow(10,((S_F)/(-2.5)));
-			double f_S_F_tot = f_S_F*(FoV_as/d*d);
+			double f_S_F_tot = f_S_F*(FoV_as/(d*d));
 
 			//cout << "    Flux limit in J band is " << f_S_J_tot << "ergs/s" << "\n";
 
@@ -233,6 +233,9 @@ int main()
 			if (n_needed==N_imf_filt){
 				cout << "Used the entire IMF. You should decrease the size of the field or increase the IMF sample." << "\n";
 			}
+			else if (n_needed<100){
+			        cout << "Needed less than 100 stars to reach required luminosity.\n";
+			}
 
 			// count the number that are above the detection threshold
 			int n_detected = 0;
@@ -241,10 +244,15 @@ int main()
 					n_detected++;
 				}
 			}
-			cout << "     " << n_needed << " stars are in the field of view" << "\n";
-			cout << "     " << n_detected << " stars are detected per square degree" << "\n";
+			//cout << "     " << n_needed << " stars are in the field of view" << "\n";
+			//cout << "     " << n_detected << " stars are detected per square degree" << "\n";
+			output << n_detected/(FoV_as/(sqdeg_sqas*d*d)) << " ";
 		} //loop over surface brightness
+		output << "\n";
 	} // loop over distances
+
+	// close output file
+	output.close();
 
 	// de-allocate memory
 	free(kmass);
