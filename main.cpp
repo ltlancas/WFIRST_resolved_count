@@ -234,7 +234,7 @@ int main()
 				cout << "Used the entire IMF. You should decrease the size of the field or increase the IMF sample." << "\n";
 			}
 			else if (n_needed<100){
-			        cout << "Needed less than 100 stars to reach required luminosity.\n";
+				cout << "Needed less than 100 stars to reach required luminosity.\n";
 			}
 
 			// count the number that are above the detection threshold
