@@ -104,11 +104,11 @@ int main()
 	J = (double*) malloc(sizeof(double)*maxN_iso);
 	H = (double*) malloc(sizeof(double)*maxN_iso);
 	F = (double*) malloc(sizeof(double)*maxN_iso);
-	Z_out = (double*) malloc(sizeof(double)*N_IMF);
-	Y_out = (double*) malloc(sizeof(double)*N_IMF);
-	J_out = (double*) malloc(sizeof(double)*N_IMF);
-	H_out = (double*) malloc(sizeof(double)*N_IMF);
-	F_out = (double*) malloc(sizeof(double)*N_IMF);
+	Z_out = (double*) malloc(sizeof(double)*maxN_IMF);
+	Y_out = (double*) malloc(sizeof(double)*maxN_IMF);
+	J_out = (double*) malloc(sizeof(double)*maxN_IMF);
+	H_out = (double*) malloc(sizeof(double)*maxN_IMF);
+	F_out = (double*) malloc(sizeof(double)*maxN_IMF);
 	// then for the IMF
 	int N_IMF;
 	double temp;
@@ -116,11 +116,11 @@ int main()
 	kmass = (double*) malloc(sizeof(double)*maxN_IMF);
 	// fluxes that will be used in sampling below
 	double *f_Z, *f_Y, *f_J, *f_H, *f_F;
-	f_Z = (double *) malloc(sizeof(double)*N_imf_filt);
-	f_Y = (double *) malloc(sizeof(double)*N_imf_filt);
-	f_J = (double *) malloc(sizeof(double)*N_imf_filt);
-	f_H = (double *) malloc(sizeof(double)*N_imf_filt);
-	f_F = (double *) malloc(sizeof(double)*N_imf_filt);
+	f_Z = (double *) malloc(sizeof(double)*maxN_IMF);
+	f_Y = (double *) malloc(sizeof(double)*maxN_IMF);
+	f_J = (double *) malloc(sizeof(double)*maxN_IMF);
+	f_H = (double *) malloc(sizeof(double)*maxN_IMF);
+	f_F = (double *) malloc(sizeof(double)*maxN_IMF);
 	// Reading isochrone file
 	ifstream isofile ("/home/lachlanl/WFIRST_resolved_count/isos/iso_age9005.txt");
 	if(!isofile.is_open()){
