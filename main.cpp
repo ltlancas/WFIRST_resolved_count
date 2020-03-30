@@ -37,7 +37,12 @@ int main()
 	double t_expose = 1000.;
 
 	ofstream output;
-	output.open("outputs/feh1_age9005_set5.txt");
+	char outname[100];
+	int len;
+	int n_set = 1;
+	len = sprintf(outname,"/home/lachlanl/WFIRST_resolved_count/outputs/feh1_age9005_set%d.txt",n_set);
+	cout << outname << "\n";
+	output.open(outname);
 
 	// defintion of field of view
 	// which is used as the FoV at 1 Mpc and 
@@ -99,7 +104,9 @@ int main()
 	kmass = (double*) malloc(sizeof(double)*maxN_IMF);
 
 	// reading in IMF file
-	ifstream massfile ("imfs/mid_set5.txt");
+	char mfilename[100];
+	len = sprintf(mfilename,"/home/lachlanl/WFIRST_resolved_count/imfs/set%d.txt",n_set);
+	ifstream massfile (mfilename);
 	if(!massfile.is_open()){
 		cerr << "There was a problem opening the IMF file \n";
 		return 1;
@@ -131,7 +138,7 @@ int main()
 	F_out = (double*) malloc(sizeof(double)*N_IMF);
 
 	// Reading isochrone file
-	ifstream isofile ("isos/iso_age9005.txt");
+	ifstream isofile ("/home/lachlanl/WFIRST_resolved_count/isos/iso_age9005.txt");
 	if(!isofile.is_open()){
 		cerr << "There was a problem opening the isochrone file \n";
 		return 1;

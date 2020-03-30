@@ -16,12 +16,12 @@ if __name__ == '__main__':
 
 	#massLimits = np.array([0.08,5, 120])
 	#powers = np.array([-1.3, -2.3]) 
-	massLimits = np.array([0.08,1.8244])
+	massLimits = np.array([0.1,1.8244])
 	powers = np.array([-1.3]) 
 	my_imf = imf.IMF_broken_powerlaw(massLimits, powers)
 
-	(masses,is_multi,comps,bleh) = my_imf.generate_cluster(5e6)
+	(masses,is_multi,comps,bleh) = my_imf.generate_cluster(1e6)
 
-	np.savetxt("m2_set.txt",masses)
+	np.savetxt("set1.txt",masses)
 
 
