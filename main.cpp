@@ -30,14 +30,14 @@ int main()
 	int n_S = 51;
 	double dS = (Smax - Smin)/(n_S-1);
 	// distance in Mpc
-	double dmin = 1.,dmax = 25.,d,mu;
+	double dmin = 1.,dmax = 20.,d,mu;
 	int n_d = 51;
 	double deld = (dmax - dmin)/(n_d-1);
 	// exposure time in seconds
 	double t_expose = 1000.;
 
 	ofstream output;
-	output.open("outputs/feh1_age9205.txt");
+	output.open("outputs/feh1_age9005_set5.txt");
 
 	// defintion of field of view
 	// which is used as the FoV at 1 Mpc and 
@@ -57,7 +57,7 @@ int main()
 
 	// These are used for allocating memory, could cause segfaults maybe
 	// maximum number of initial masses being read in from IMF
-	int maxN_IMF = 30000000;
+	int maxN_IMF = 3000000;
 	// maximum number of lines to be read from isochrone file
 	int maxN_iso = 1600;
 
@@ -99,7 +99,7 @@ int main()
 	kmass = (double*) malloc(sizeof(double)*maxN_IMF);
 
 	// reading in IMF file
-	ifstream massfile ("imfs/mid_set.txt");
+	ifstream massfile ("imfs/mid_set5.txt");
 	if(!massfile.is_open()){
 		cerr << "There was a problem opening the IMF file \n";
 		return 1;
@@ -131,7 +131,7 @@ int main()
 	F_out = (double*) malloc(sizeof(double)*N_IMF);
 
 	// Reading isochrone file
-	ifstream isofile ("isos/iso_age9205.txt");
+	ifstream isofile ("isos/iso_age9005.txt");
 	if(!isofile.is_open()){
 		cerr << "There was a problem opening the isochrone file \n";
 		return 1;
